@@ -24,24 +24,22 @@ const userSchema = new Schema(
 
     name: {
       type: String,
-      required: true,
     },
 
     surname: {
       type: String,
-      required: true,
     },
 
     journeysCreated: {
-      type: [{ type : ObjectId, ref: 'Journey' }]
+      type: [{ type : Schema.Types.ObjectId, ref: 'Journey' }]
     },
 
     journeysCopied: {
-      type: [{ type : ObjectId, ref: 'Journey' }]
+      type: [{ type : Schema.Types.ObjectId, ref: 'Journey' }]
     },
     
     journeysCompleted: {
-      type: [{ type : ObjectId, ref: 'Journey' }]
+      type: [{ type : Schema.Types.ObjectId, ref: 'Journey' }]
     },
 
     profilePicture: {

@@ -9,9 +9,9 @@ const saltRounds = 10;
 // Signup Routes
 
 router.post("/signup", (req, res, next) => {
-  const { email, password, name } = req.body;
+  const { email, password, username } = req.body;
 
-  if (email === "" || password === "" || name === "") {
+  if (email === "" || password === "" || username === "") {
     res.status(400).json({ message: "Please provide your email, password and username" });
     return;
   }
@@ -41,12 +41,12 @@ router.post("/signup", (req, res, next) => {
       const salt = bcrypt.genSaltSync(saltRounds);
       const hashedPassword = bcrypt.hashSync(password, salt);
 
-      return User.create({ email, password: hashedPassword, name });
+      return User.create({ email, password: hashedPassword, username });
     })
     .then((createdUser) => {
-      const { email, name, _id } = createdUser;
+      const { email, username, _id } = createdUser;
 
-      const user = { email, name, _id };
+      const user = { email, username, _id };
 
       res.status(201).json({ user: user });
     })
@@ -75,9 +75,9 @@ router.post("/login", (req, res, next) => {
 
       if (passwordCorrect) {
 
-        const { _id, email, name } = foundUser;
+        const { _id, email, username } = foundUser;
 
-        const payload = { _id, email, name };
+        const payload = { _id, email, username };
 
         const authToken = jwt.sign(payload, process.env.TOKEN_SECRET, {
           algorithm: "HS256",
