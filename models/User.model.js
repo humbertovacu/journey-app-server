@@ -1,26 +1,59 @@
 const { Schema, model } = require("mongoose");
 
-// TODO: Please make sure you edit the User model to whatever makes sense in this case
 const userSchema = new Schema(
   {
     email: {
       type: String,
-      required: [true, "Email is required."],
+      required: true,
       unique: true,
       lowercase: true,
       trim: true,
     },
+
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true
+    },
+
     password: {
       type: String,
-      required: [true, "Password is required."],
+      required: true,
     },
+
     name: {
       type: String,
-      required: [true, "Name is required."],
+      required: true,
     },
-  },
+
+    surname: {
+      type: String,
+      required: true,
+    },
+
+    journeysCreated: {
+      type: [{ type : ObjectId, ref: 'Journey' }]
+    },
+
+    journeysCopied: {
+      type: [{ type : ObjectId, ref: 'Journey' }]
+    },
+    
+    journeysCompleted: {
+      type: [{ type : ObjectId, ref: 'Journey' }]
+    },
+
+    profilePicture: {
+      type: String,
+      default: 'https://res.cloudinary.com/djwmauhbh/image/upload/v1675875047/journey-app-assets/default-profile-photo_u5nuvj.jpg'
+    },
+
+    biography: {
+      type: String
+    }
+  }, 
   {
-    // this second object adds extra properties: `createdAt` and `updatedAt`
     timestamps: true,
   }
 );
