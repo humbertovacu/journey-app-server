@@ -5,9 +5,9 @@ const Block = require("../models/Block.model")
 
 router.post('/steps', (req,res)=>{
     console.log(req.body)
-    const { title, description,importance, links, difficulty, notes, imageUrl } = req.body
+    const { title, description,importance, links, difficulty, notes, image } = req.body
 
-    Step.create({title, description, links, difficulty,importance, notes ,image: imageUrl})
+    Step.create({title, description, links, difficulty,importance, notes ,image})
         .then(stepCreated=>{
             console.log("step created in DB")
             console.log(stepCreated)
@@ -24,6 +24,18 @@ router.get('/steps/:stepsId', (req,res)=>{
     Step.findById(stepId)
         .then(stepsData=>{
             console.log(stepsData)
+            res.json(stepsData)
+        })
+})
+
+router.put('/steps/:stepsId', (req,res)=>{
+    const stepId = req.params.stepsId
+    const updatedStepInfo = req.body.step
+    console.log("info received")
+    console.log(updatedStepInfo)
+    Step.findByIdAndUpdate(stepId, updatedStepInfo, {new:true})
+        .then(stepUpdated=>{
+            res.status(200).json({step: stepUpdated})
         })
 })
 
