@@ -30,36 +30,68 @@ router.get('/steps/:stepsId', (req,res)=>{
 // Block Routes
 
 router.post('/:journeyId/blocks', async (req, res)=> {
+
     const { title, description, category, importance } = req.body;
     const { journeyId } = req.params;
 
     if(title === "" || category === "" || importance === ""){
         res.status(400).json({message: "Please add a title, a category and select an importance level"})
-    }
+    };
 
     Block.create({title, description, category, importance})
-        .then(createdBlock => {res.status(200).json(createdBlock)})
+        .then(createdBlock => {res.status(201).json(createdBlock.data)})
         //Logic for pushing createdBlock._id into Journey.blocks//;
         .catch(err => {
             res.status(500).json({message: "Internal server error. Please try again."})
-        })
-
+        });
 })
+9
 
+router.get('/:journeyId/blocks', (req, res) => {
 
-router.get('/blocks/:blockId', (req,res)=>{
-
-    /* Block.find({block._id})
-        .populate('steps')
-        .then(blockFound=>{
-            console.log(blockFound)
-            res.json({block:blockFound})
-        })
-         */
-
+    const { journeyId } = req.params;
     
+    Journey.findById(journeyId).populate('blocks')
+        .then(foundBlocks => {
+            res.status(200).json({blocks: foundBlocks})
+        .catch(err => {
+            res.status(500).json({message: 'Internal server error. Please try again'})
+        });
+    });
 })
 
+router.get('/blocks/:blockId', (req, res) => {
+
+    const { blockId } =  req.params;
+
+    Block.findById(blockId)
+        .then(blockFound => {
+            console.log(blockFound);
+            res.status(200).json({block: blockFound});
+        })
+        .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}))  
+})
+
+router.put('/blocks/:blockId/', (req, res) => {
+    
+    const { title, description, category, importance } = req.body;
+    const { blockId } = req.params;
+    
+    Block.findByIdAndUpdate(blockId, {title, description, category, importance}, {new: true})
+        .then(updatedBlock => res.status(200).json({block: updatedBlock}))
+        .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}));
+        
+})
+
+router.post('/blocks/:blockId/delete', (req, res) => {
+    
+    const { blockId } = req.params;
+
+    Block.findByIdAndDelete(blockId)
+        .then(() => res.status(200).json({message: "Block deleted"}))
+        .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}))
+
+})
 
 
 module.exports = router;
