@@ -18,7 +18,7 @@ const stepSchema = new Schema(
     },
 
     links: {
-      type: [String],
+      type: [Object],
       required: true
     },
 
@@ -30,7 +30,7 @@ const stepSchema = new Schema(
     importance:{
         type: String,
         required: true,
-        enum:["Recommended", "Critical", "Optional - Bonus knowledge"]
+        enum:["Recommended", "Critical", "Optional"]
     },
 
     notes: {
