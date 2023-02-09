@@ -9,7 +9,6 @@ const blockSchema = new Schema(
 
     description: {
       type: String,
-      required: true
     },
 
     steps: {

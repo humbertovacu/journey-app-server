@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Step = require("../models/Step.model");
+const Block = require("../models/Block.model")
 
 router.post('/steps', (req,res)=>{
     console.log(req.body)
@@ -24,6 +25,25 @@ router.get('/steps/:stepsId', (req,res)=>{
         .then(stepsData=>{
             console.log(stepsData)
         })
+})
+
+// Block Routes
+
+router.post('/:journeyId/blocks', async (req, res)=> {
+    const { title, description, category, importance } = req.body;
+    const { journeyId } = req.params;
+
+    if(title === "" || category === "" || importance === ""){
+        res.status(400).json({message: "Please add a title, a category and select an importance level"})
+    }
+
+    Block.create({title, description, category, importance})
+        .then(createdBlock => {res.status(200).json(createdBlock)})
+        //Logic for pushing createdBlock._id into Journey.blocks//;
+        .catch(err => {
+            res.status(500).json({message: "Internal server error. Please try again."})
+        })
+
 })
 
 
