@@ -11,9 +11,8 @@ const blockSchema = new Schema(
       type: String,
     },
 
-    steps: {
-      type: [{ type : Schema.Types.ObjectId, ref: 'Journey' }],
-    },
+    steps: [{ type : Schema.Types.ObjectId, ref: 'Step' }],
+  
 
     category: {
       type: String,
