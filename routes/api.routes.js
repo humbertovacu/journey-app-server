@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Step = require("../models/Step.model");
 const Block = require("../models/Block.model")
+
 const Journey = require("../models/Journey.model")
 const fileUploader = require("../config/cloudinary.config");
 
@@ -58,6 +59,7 @@ router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
 
 })
 
+
 router.post('/steps', (req,res)=>{
     console.log(req.body)
     const { title, description,importance, links, difficulty, notes, image } = req.body
@@ -74,9 +76,9 @@ router.post('/steps', (req,res)=>{
   })
 
 router.get('/steps/:stepsId', (req,res)=>{
-    const stepId = req.params.stepsId
-    console.log(stepId)
-    Step.findById(stepId)
+    const {stepsId} = req.params
+    console.log(stepsId)
+    Step.findById(stepsId)
         .then(stepsData=>{
             console.log(stepsData)
             res.json(stepsData)
@@ -84,11 +86,11 @@ router.get('/steps/:stepsId', (req,res)=>{
 })
 
 router.put('/steps/:stepsId', (req,res)=>{
-    const stepId = req.params.stepsId
-    const updatedStepInfo = req.body.step
+    const {stepsId} = req.params
+    const {step} = req.body
     console.log("info received")
-    console.log(updatedStepInfo)
-    Step.findByIdAndUpdate(stepId, updatedStepInfo, {new:true})
+    console.log(step)
+    Step.findByIdAndUpdate(stepsId, step, {new:true})
         .then(stepUpdated=>{
             res.status(200).json({step: stepUpdated})
         })
