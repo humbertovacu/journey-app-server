@@ -2,6 +2,25 @@ const express = require("express");
 const router = express.Router();
 const Step = require("../models/Step.model");
 const Block = require("../models/Block.model")
+const fileUploader = require("../config/cloudinary.config")
+
+
+router.post("/upload", fileUploader.single("imageUrl"), (req, res, next) => {
+    // console.log("file is: ", req.file)
+    console.log(req.file)
+   
+    if (!req.file) {
+      next(new Error("No file uploaded!"));
+      res.json({message:"There has been a problem with the upload, try again!"})
+      return;
+    }
+    
+    // Get the URL of the uploaded file and send it as a response.
+    // 'fileUrl' can be any name, just make sure you remember to use the same when accessing it on the frontend
+    
+    res.json({ fileUrl: req.file.path });
+  });
+
 
 router.post('/steps', (req,res)=>{
     console.log(req.body)
@@ -19,9 +38,9 @@ router.post('/steps', (req,res)=>{
   })
 
 router.get('/steps/:stepsId', (req,res)=>{
-    const stepId = req.params.stepsId
-    console.log(stepId)
-    Step.findById(stepId)
+    const {stepsId} = req.params
+    console.log(stepsId)
+    Step.findById(stepsId)
         .then(stepsData=>{
             console.log(stepsData)
             res.json(stepsData)
@@ -29,11 +48,11 @@ router.get('/steps/:stepsId', (req,res)=>{
 })
 
 router.put('/steps/:stepsId', (req,res)=>{
-    const stepId = req.params.stepsId
-    const updatedStepInfo = req.body.step
+    const {stepsId} = req.params
+    const {step} = req.body
     console.log("info received")
-    console.log(updatedStepInfo)
-    Step.findByIdAndUpdate(stepId, updatedStepInfo, {new:true})
+    console.log(step)
+    Step.findByIdAndUpdate(stepsId, step, {new:true})
         .then(stepUpdated=>{
             res.status(200).json({step: stepUpdated})
         })
