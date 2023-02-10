@@ -43,9 +43,15 @@ router.put('/:journeyId', (req, res) => {
 
     const { journeyId } = req.params;
     const { title, description, tags, image, isPublic } = req.body;
+    let tagsAdded = {
+        $addToSet: {
+             tags
+        }
+    }
     
-    Journey.findByIdAndUpdate(journeyId, {title, description, tags, image, isPublic})
+    Journey.findOneAndUpdate({_id:journeyId}, { title, description, tags: tagsAdded, image, isPublic }, {new: true})
         .then(updatedJourney => res.status(200).json(updatedJourney))
+        .catch(err => res.status(500).json({message: "Sorry, we couldn't update this journey."}))
 
 })
 
