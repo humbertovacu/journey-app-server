@@ -2,6 +2,61 @@ const express = require("express");
 const router = express.Router();
 const Step = require("../models/Step.model");
 const Block = require("../models/Block.model")
+const Journey = require("../models/Journey.model")
+const fileUploader = require("../config/cloudinary.config");
+
+
+router.post('/journeys', (req, res) => {
+    
+    const { title, description, author, tags, isPublic } = req.body;
+    let image = '';
+
+    if(title === '' || description ===  ''){
+        res.status(400).json({message: 'Please add a title and a description to your new journey'})
+    }
+
+    if(!req.file){
+        image = 'https://res.cloudinary.com/djwmauhbh/image/upload/v1676047808/journey-app-assets/journey-default_aay5tv.jpg'
+    } else {
+        image = req.file.path
+    }
+
+    Journey.create({title, description, author, image, tags, isPublic })
+        .then(createdJourney => {
+            res.status(201).json(createdJourney);
+        })
+        .catch(err => res.status(500).json({message: 'Internal Server Error. Please try again.'}))
+
+})
+
+router.get('/:journeyId', (req, res) => {
+    
+    const { journeyId } = req.params;
+
+    Journey.findById(journeyId)
+        .then(foundJourney => res.status(200).json(foundJourney))
+        .catch(err => res.status(404).json({message: `Sorry, we couldn't find this page.`}));
+
+})
+
+router.put('/:journeyId', (req, res) => {
+
+    const { journeyId } = req.params;
+    const { title, description, tags, image, isPublic } = req.body;
+    
+    Journey.findByIdAndUpdate(journeyId, {title, description, tags, image, isPublic})
+        .then(updatedJourney => res.status(200).json(updatedJourney))
+
+})
+
+router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
+    if(!req.file){
+        res.status(400).json({message : 'No file uploaded'})
+    }
+
+    res.json({imageUrl: req.file.path});
+
+})
 
 router.post('/steps', (req,res)=>{
     console.log(req.body)
