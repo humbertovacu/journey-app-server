@@ -65,6 +65,8 @@ router.delete('/journeys/:journeyId/', (req, res) => {
 
 })
 
+// CLOUDINARY ROUTE
+
 router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
     if(!req.file){
         res.status(400).json({message : 'No file uploaded'})
@@ -74,24 +76,31 @@ router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
 
 });
 
+// STEP Routes
 
-router.post('/steps', (req,res)=>{
-    console.log(req.body)
+router.post('/:blockId/steps', async (req,res)=>{
+    const {blockId} = req.params
+    console.log(blockId)
     const { title, description,importance, links, difficulty, notes, image } = req.body
 
     if(title === "" || description === "" || links === "" || difficulty === "" || notes === "" || image ===""){
         res.json({message: "Please make sure to fill all the fields"})
     }
-    else {
-    Step.create({title, description, links, difficulty,importance, notes ,image})
-        .then(stepCreated=>{
-            console.log("step created in DB")
-            console.log(stepCreated)
-            res.json({step: stepCreated, message: "Step successfully created"})
+    else  {
+    let stepCreated = await  Step.create({title, description, links, difficulty,importance, notes ,image})
+    console.log(stepCreated)
+
+           await Block.findByIdAndUpdate(blockId, {$push: {steps: stepCreated._id}})
+                .then(blockResponse=>{
+                    console.log("block response")
+                    console.log(blockResponse)
+                    res.json({block: blockResponse, message: "Step successfully created inside Block"})
+                })
+                        
 
             //Missing: Push the newly created Step into the Block model (steps property) , we can 
             // find the ID of the model through the URL (useParams hook necessary)
-        })
+       
     }
   })
 
@@ -166,6 +175,7 @@ router.get('/blocks/:blockId', (req, res) => {
     const { blockId } =  req.params;
 
     Block.findById(blockId)
+        .populate('steps')
         .then(blockFound => {
             console.log(blockFound);
             res.status(200).json({block: blockFound});
