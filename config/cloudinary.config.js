@@ -11,9 +11,11 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
+
     allowed_formats: ["jpg", "png"],
     folder: "journey-app-assets", 
     resource_type: "raw"
+
   }
 });
 
