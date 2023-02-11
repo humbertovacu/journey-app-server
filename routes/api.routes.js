@@ -26,15 +26,20 @@ router.post('/steps', (req,res)=>{
     console.log(req.body)
     const { title, description,importance, links, difficulty, notes, image } = req.body
 
+    if(title === "" || description === "" || links === "" || difficulty === "" || notes === "" || image ===""){
+        res.json({message: "Please make sure to fill all the fields"})
+    }
+    else {
     Step.create({title, description, links, difficulty,importance, notes ,image})
         .then(stepCreated=>{
             console.log("step created in DB")
             console.log(stepCreated)
-            res.json({step: stepCreated})
+            res.json({step: stepCreated, message: "Step successfully created"})
 
             //Missing: Push the newly created Step into the Block model (steps property) , we can 
             // find the ID of the model through the URL (useParams hook necessary)
         })
+    }
   })
 
 router.get('/steps/:stepsId', (req,res)=>{
@@ -55,6 +60,14 @@ router.put('/steps/:stepsId', (req,res)=>{
     Step.findByIdAndUpdate(stepsId, step, {new:true})
         .then(stepUpdated=>{
             res.status(200).json({step: stepUpdated})
+        })
+})
+
+router.delete('/steps/:stepsId', (req,res)=>{
+    const {stepsId} = req.params
+    Step.findByIdAndDelete(stepsId)
+        .then(stepUpdated=>{
+            res.status(200).json({message: "Step deleted"})
         })
 })
 
