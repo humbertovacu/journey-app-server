@@ -54,66 +54,15 @@ router.put('/:journeyId', async (req, res) =>  {
 
 });
 
-router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
-    if(!req.file){
-        res.status(400).json({message : 'No file uploaded'})
-    }
+router.delete('/:journeyId/', (req, res) => {
 
-    res.json({imageUrl: req.file.path});
-
-});
-
-const Journey = require("../models/Journey.model")
-const fileUploader = require("../config/cloudinary.config");
-
-
-router.post('/journeys', (req, res) => {
+    const { journeyId } = req.body;
     
-    const { title, description, author, tags, isPublic } = req.body;
-    let image = '';
+    Journey.findByIdAndRemove(journeyId)
+        .then(() => res.status(200).json({message: 'This journey has been deleted.'}))
+        .catch(err => res.status(500).json({message: `We couldn't delete this journey. Please try again.`}))
 
-    if(title === '' || description ===  ''){
-        res.status(400).json({message: 'Please add a title and a description to your new journey'})
-    }
-
-    if(!req.file){
-        image = 'https://res.cloudinary.com/djwmauhbh/image/upload/v1676047808/journey-app-assets/journey-default_aay5tv.jpg'
-    } else {
-        image = req.file.path
-    }
-
-    Journey.create({title, description, author, image, tags, isPublic })
-        .then(createdJourney => {
-            res.status(201).json(createdJourney);
-        })
-        .catch(err => res.status(500).json({message: 'Internal Server Error. Please try again.'}))
-
-});
-
-router.get('/:journeyId', (req, res) => {
-    
-    const { journeyId } = req.params;
-
-    Journey.findById(journeyId)
-        .then(foundJourney => res.status(200).json(foundJourney))
-        .catch(err => res.status(404).json({message: `Sorry, we couldn't find this page.`}));
-
-});
-
-router.put('/:journeyId', async (req, res) =>  {
-
-    const { journeyId } = req.params;
-    const { title, description, tags, image, isPublic } = req.body;
-   
-    let userJourney = await Journey.findById(journeyId);
-    userJourney.tags.addToSet(tags);
-    await userJourney.save();
-    
-    Journey.findByIdAndUpdate(journeyId, {title, description, image, isPublic}, {new: true})
-        .then(updatedJourney => res.status(200).json(updatedJourney))
-        .catch(err => res.status(500).json({message: "Sorry, we couldn't update this journey."}))
-
-});
+})
 
 router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
     if(!req.file){
@@ -217,11 +166,11 @@ router.put('/blocks/:blockId/', (req, res) => {
         
 })
 
-router.post('/blocks/:blockId/delete', (req, res) => {
+router.delete(':blockId/', (req, res) => {
     
     const { blockId } = req.params;
 
-    Block.findByIdAndDelete(blockId)
+    Block.findByIdAndRemove(blockId)
         .then(() => res.status(200).json({message: "Block deleted"}))
         .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}))
 
