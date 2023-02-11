@@ -63,6 +63,63 @@ router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
 
 });
 
+const Journey = require("../models/Journey.model")
+const fileUploader = require("../config/cloudinary.config");
+
+
+router.post('/journeys', (req, res) => {
+    
+    const { title, description, author, tags, isPublic } = req.body;
+    let image = '';
+
+    if(title === '' || description ===  ''){
+        res.status(400).json({message: 'Please add a title and a description to your new journey'})
+    }
+
+    if(!req.file){
+        image = 'https://res.cloudinary.com/djwmauhbh/image/upload/v1676047808/journey-app-assets/journey-default_aay5tv.jpg'
+    } else {
+        image = req.file.path
+    }
+
+    Journey.create({title, description, author, image, tags, isPublic })
+        .then(createdJourney => {
+            res.status(201).json(createdJourney);
+        })
+        .catch(err => res.status(500).json({message: 'Internal Server Error. Please try again.'}))
+
+})
+
+router.get('/:journeyId', (req, res) => {
+    
+    const { journeyId } = req.params;
+
+    Journey.findById(journeyId)
+        .then(foundJourney => res.status(200).json(foundJourney))
+        .catch(err => res.status(404).json({message: `Sorry, we couldn't find this page.`}));
+
+})
+
+router.put('/:journeyId', (req, res) => {
+
+    const { journeyId } = req.params;
+    const { title, description, tags, image, isPublic } = req.body;
+    
+    Journey.findByIdAndUpdate(journeyId, {title, description, tags, image, isPublic})
+        .then(updatedJourney => res.status(200).json(updatedJourney))
+
+})
+
+router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
+    if(!req.file){
+        res.status(400).json({message : 'No file uploaded'})
+    }
+
+    res.json({imageUrl: req.file.path});
+
+})
+
+
 router.post('/steps', (req,res)=>{
     console.log(req.body)
     const { title, description,importance, links, difficulty, notes, image } = req.body
@@ -79,9 +136,9 @@ router.post('/steps', (req,res)=>{
 });
 
 router.get('/steps/:stepsId', (req,res)=>{
-    const stepId = req.params.stepsId
-    console.log(stepId)
-    Step.findById(stepId)
+    const {stepsId} = req.params
+    console.log(stepsId)
+    Step.findById(stepsId)
         .then(stepsData=>{
             console.log(stepsData)
             res.json(stepsData)
@@ -89,11 +146,11 @@ router.get('/steps/:stepsId', (req,res)=>{
 })
 
 router.put('/steps/:stepsId', (req,res)=>{
-    const stepId = req.params.stepsId
-    const updatedStepInfo = req.body.step
+    const {stepsId} = req.params
+    const {step} = req.body
     console.log("info received")
-    console.log(updatedStepInfo)
-    Step.findByIdAndUpdate(stepId, updatedStepInfo, {new:true})
+    console.log(step)
+    Step.findByIdAndUpdate(stepsId, step, {new:true})
         .then(stepUpdated=>{
             res.status(200).json({step: stepUpdated})
         })
