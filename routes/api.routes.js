@@ -119,7 +119,7 @@ router.post('/blocks', async (req, res)=> {
     const { journeyId } = req.params;
 
     if(title === "" || category === "" || importance === ""){
-        res.status(400).json({message: "Please add a title, a category and select an importance level"})
+        res.json({message: "Please add a title, a category and select an importance level"})
     };
 
     Block.create({title, description, category, importance})
