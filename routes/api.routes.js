@@ -88,7 +88,7 @@ router.post('/journeys', (req, res) => {
         })
         .catch(err => res.status(500).json({message: 'Internal Server Error. Please try again.'}))
 
-})
+});
 
 router.get('/:journeyId', (req, res) => {
     
@@ -98,23 +98,22 @@ router.get('/:journeyId', (req, res) => {
         .then(foundJourney => res.status(200).json(foundJourney))
         .catch(err => res.status(404).json({message: `Sorry, we couldn't find this page.`}));
 
-})
+});
 
-router.put('/:journeyId', (req, res) => {
+router.put('/:journeyId', async (req, res) =>  {
 
     const { journeyId } = req.params;
     const { title, description, tags, image, isPublic } = req.body;
-    let tagsAdded = {
-        $addToSet: {
-             tags
-        }
-    }
+   
+    let userJourney = await Journey.findById(journeyId);
+    userJourney.tags.addToSet(tags);
+    await userJourney.save();
     
-    Journey.findOneAndUpdate({_id:journeyId}, { title, description, tags: tagsAdded, image, isPublic }, {new: true})
+    Journey.findByIdAndUpdate(journeyId, {title, description, image, isPublic}, {new: true})
         .then(updatedJourney => res.status(200).json(updatedJourney))
         .catch(err => res.status(500).json({message: "Sorry, we couldn't update this journey."}))
 
-})
+});
 
 router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
     if(!req.file){
@@ -123,7 +122,7 @@ router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
 
     res.json({imageUrl: req.file.path});
 
-})
+});
 
 
 router.post('/steps', (req,res)=>{
