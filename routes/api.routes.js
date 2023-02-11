@@ -122,8 +122,9 @@ router.post('/:journeyId/blocks', async (req, res)=> {
     };
 
     Block.create({title, description, category, importance})
-        .then(createdBlock => res.status(201).json(createdBlock))
-        //Logic for pushing createdBlock._id into Journey.blocks//;
+        .then(async createdBlock => {
+            await Journey.findByIdAndUpdate(journeyId, {$push: {blocks: createdBlock._id}})
+            res.status(201).json(createdBlock)})
         .catch(err => {
             res.status(500).json({message: "Internal server error. Please try again."})
         });
