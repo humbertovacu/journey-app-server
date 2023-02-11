@@ -113,7 +113,7 @@ router.put('/steps/:stepsId', (req,res)=>{
 
 // Block Routes
 
-router.post('/:journeyId/blocks', async (req, res)=> {
+router.post('/blocks', async (req, res)=> {
 
     const { title, description, category, importance } = req.body;
     const { journeyId } = req.params;
