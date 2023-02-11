@@ -13,8 +13,8 @@ router.post('/journeys', (req, res) => {
     let image = '';
 
     if(title === '' || description ===  ''){
-        res.status(400).json({message: 'Please add a title and a description to your new journey'})
-    }
+        res.json({message: 'Please add a title and a description to your new journey'});
+    };
 
     if(!req.file){
         image = 'https://res.cloudinary.com/djwmauhbh/image/upload/v1676047808/journey-app-assets/journey-default_aay5tv.jpg'
@@ -22,7 +22,7 @@ router.post('/journeys', (req, res) => {
         image = req.file.path
     }
 
-    Journey.create({title, description, author: userId, image, tags, isPublic })
+    Journey.create({title, description, author: '63e3df3e2d9a80ff1fdcd138', image, tags, isPublic })
         .then(createdJourney => {
             res.status(201).json(createdJourney);
         })
