@@ -1,14 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const Step = require("../models/Step.model");
-const Block = require("../models/Block.model")
-const Journey = require("../models/Journey.model")
+const Block = require("../models/Block.model");
+const Journey = require("../models/Journey.model");
 const fileUploader = require("../config/cloudinary.config");
 
 
 router.post('/journeys', (req, res) => {
     
-    const { title, description, author, tags, isPublic } = req.body;
+    const { title, description, tags, isPublic } = req.body;
+    const { userId } = req.params;
     let image = '';
 
     if(title === '' || description ===  ''){
@@ -21,7 +22,7 @@ router.post('/journeys', (req, res) => {
         image = req.file.path
     }
 
-    Journey.create({title, description, author, image, tags, isPublic })
+    Journey.create({title, description, author: userId, image, tags, isPublic })
         .then(createdJourney => {
             res.status(201).json(createdJourney);
         })
@@ -29,7 +30,7 @@ router.post('/journeys', (req, res) => {
 
 });
 
-router.get('/:journeyId', (req, res) => {
+router.get('/journeys/:journeyId', (req, res) => {
     
     const { journeyId } = req.params;
 
@@ -39,7 +40,7 @@ router.get('/:journeyId', (req, res) => {
 
 });
 
-router.put('/:journeyId', async (req, res) =>  {
+router.put('/journeys/:journeyId', async (req, res) =>  {
 
     const { journeyId } = req.params;
     const { title, description, tags, image, isPublic } = req.body;
@@ -54,7 +55,7 @@ router.put('/:journeyId', async (req, res) =>  {
 
 });
 
-router.delete('/:journeyId/', (req, res) => {
+router.delete('/journeys/:journeyId/', (req, res) => {
 
     const { journeyId } = req.body;
     
@@ -122,15 +123,16 @@ router.post('/:journeyId/blocks', async (req, res)=> {
     };
 
     Block.create({title, description, category, importance})
-        .then(createdBlock => res.status(201).json(createdBlock))
-        //Logic for pushing createdBlock._id into Journey.blocks//;
+        .then(async createdBlock => {
+            await Journey.findByIdAndUpdate(journeyId, {$push: {blocks: createdBlock._id}})
+            res.status(201).json(createdBlock)})
         .catch(err => {
             res.status(500).json({message: "Internal server error. Please try again."})
         });
-})
-9
+});
 
-router.get('/:journeyId/blocks', (req, res) => {
+
+router.get('/blocks', (req, res) => {
 
     const { journeyId } = req.params;
     
@@ -141,7 +143,8 @@ router.get('/:journeyId/blocks', (req, res) => {
             res.status(500).json({message: 'Internal server error. Please try again'})
         });
     });
-})
+});
+
 
 router.get('/blocks/:blockId', (req, res) => {
 
@@ -153,7 +156,8 @@ router.get('/blocks/:blockId', (req, res) => {
             res.status(200).json({block: blockFound});
         })
         .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}))  
-})
+});
+
 
 router.put('/blocks/:blockId/', (req, res) => {
     
@@ -164,9 +168,10 @@ router.put('/blocks/:blockId/', (req, res) => {
         .then(updatedBlock => res.status(200).json({block: updatedBlock}))
         .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}));
         
-})
+});
 
-router.delete(':blockId/', (req, res) => {
+
+router.delete('blocks/:blockId/', (req, res) => {
     
     const { blockId } = req.params;
 
@@ -174,7 +179,7 @@ router.delete(':blockId/', (req, res) => {
         .then(() => res.status(200).json({message: "Block deleted"}))
         .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}))
 
-})
+});
 
 
 module.exports = router;
