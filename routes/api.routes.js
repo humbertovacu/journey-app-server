@@ -6,7 +6,7 @@ const Journey = require("../models/Journey.model");
 const fileUploader = require("../config/cloudinary.config");
 
 
-router.post('/journeys', (req, res) => {
+router.post(':userId/journeys', (req, res) => {
     
     const { title, description, tags, isPublic } = req.body;
     const { userId } = req.params;
@@ -105,7 +105,6 @@ router.post('/:blockId/steps', async (req,res)=>{
   })
 
 
-
 router.get('/steps/:stepsId', (req,res)=>{
     const {stepsId} = req.params
     console.log(stepsId)
@@ -137,13 +136,13 @@ router.delete('/steps/:stepsId', (req,res)=>{
 
 // Block Routes
 
-router.post('/blocks', async (req, res)=> {
+router.post(':journeyId/blocks', async (req, res)=> {
 
     const { title, description, category, importance } = req.body;
     const { journeyId } = req.params;
 
     if(title === "" || category === "" || importance === ""){
-        res.status(400).json({message: "Please add a title, a category and select an importance level"})
+        res.json({message: "Please add a title, a category and select an importance level"})
     };
 
     Block.create({title, description, category, importance})
