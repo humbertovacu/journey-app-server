@@ -22,7 +22,7 @@ router.post(':userId/journeys', (req, res) => {
         image = req.file.path
     }
 
-    Journey.create({title, description, author: '63e3df3e2d9a80ff1fdcd138', image, tags, isPublic })
+    Journey.create({title, description, author: userId, image, tags, isPublic })
         .then(createdJourney => {
             res.status(201).json(createdJourney);
         })
