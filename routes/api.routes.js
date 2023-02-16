@@ -36,7 +36,7 @@ router.post('/:userId/journeys', async (req, res) => {
     }
 
   let createdJourney = await  Journey.create({title, description, author: userId, image, tags, isPublic }).catch(err=>console.log(err))
-  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}).populate("journeysCreated").catch(err=>console.log(err))
+  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated").catch(err=>console.log(err))
     res.json({user: updatedUser})
 });
 
@@ -136,11 +136,20 @@ router.put('/steps/:stepsId', (req,res)=>{
         })
 })
 
-router.delete('/steps/:stepsId', (req,res)=>{
-    const {stepsId} = req.params
-    Step.findByIdAndDelete(stepsId)
-        .then(stepUpdated=>{
-            res.status(200).json({message: "Step deleted"})
+router.delete('/steps/:blockId/:stepsId', async (req,res)=>{
+    const {stepsId, blockId} = req.params
+    await Step.findByIdAndDelete(stepsId)
+        .then(async (stepUpdated)=>{
+            await Block.findById(blockId)
+                .then(async (blockFound)=>{
+                    let stepToRemove = blockFound.steps.find(step=> step == stepsId)
+                    blockFound.steps.splice(blockFound.steps.findIndex(step=>step===stepToRemove),1)
+                    await Block.findByIdAndUpdate(blockId, {steps: blockFound.steps}, {new:true})
+                        .then(blockUpdated=>{
+                            res.status(200).json({message: "Step deleted"})
+                        })  
+                })
+            
         })
 })
 
@@ -211,7 +220,6 @@ router.delete('/:journeyId/blocks/:blockId/', async (req, res) => {
 
    await Block.findByIdAndDelete(blockId)
         .then(async () => {
-            let newBlocks=[]
             await Journey.findById(journeyId)
                 .then(async (journeyFound)=>{
                   let blockToRemove = journeyFound.blocks.find(block=> block == blockId)
