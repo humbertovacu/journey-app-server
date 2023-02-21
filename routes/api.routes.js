@@ -78,37 +78,57 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 
 });
 
-router.put('/journeys/:journeyId/like', async (req, res) =>  {
-    let updatedJourney = {}
+// JOURNEY LIKES ROUTES
+
+router.post('/journeys/:journeyId/like', async (req, res) => {
     const { journeyId } = req.params;
     const { userId } = req.body;
-   let userFound = await User.findById(userId)
-   let journeyToUpdate = await Journey.findById(journeyId)
-   if (journeyToUpdate.upvoteUsers.includes(userId)){
-    await journeyToUpdate.upvoteUsers.map(async (user)=>{
-
-        if(user = userFound._id){
-            let index = journeyToUpdate.upvoteUsers.indexOf(user)
-
-            journeyToUpdate.upvoteUsers.splice(index,1)
-            updatedJourney = await Journey.findByIdAndUpdate(journeyId, {upvoteUsers: journeyToUpdate.upvoteUsers}, {new:true})
-                .then(response=>{
-                    console.log(response)
-            })
-                .catch(err=>console.log(err))
-        }
-    })
-    res.json({journey: updatedJourney})
-    
-   } else {
-
+  console.log("starting")
+    try {
+      const userFound = await User.findById(userId)
+      const journeyToUpdate = await Journey.findById(journeyId)
   
-   
-   await Journey.findByIdAndUpdate(journeyId, {$push: {upvoteUsers: userFound._id}}, {new:true})
-    .then(response=>res.json({journey: response}))
-    .catch(err=>res.json(err))
+      if (journeyToUpdate.upvoteUsers.includes(userId)) {
+        journeyToUpdate.upvoteUsers = journeyToUpdate.upvoteUsers.filter(user => user.toString() !== userId)
+  
+        const updatedJourney = await journeyToUpdate.save()
+  
+        res.json({ journey: updatedJourney })
+      } else {
+        journeyToUpdate.upvoteUsers.push(userId)
+  
+        const updatedJourney = await journeyToUpdate.save()
+  
+        res.json({ journey: updatedJourney })
+      }
+    } catch (err) {
+      res.json({ error: err.message })
     }
-});
+  });
+
+  router.delete('/journeys/:journeyId/like/:userId', async (req, res) => {
+    const { journeyId, userId } = req.params;
+  
+    try {
+      const journey = await Journey.findById(journeyId);
+      if (!journey) {
+        return res.status(404).json({ message: 'Journey not found' });
+      }
+  
+      const userIndex = journey.upvoteUsers.indexOf(userId);
+      if (userIndex === -1) {
+        return res.status(404).json({ message: 'User has not liked this journey' });
+      }
+  
+      journey.upvoteUsers.splice(userIndex, 1);
+      const updatedJourney = await journey.save();
+  
+      res.json({ journey: updatedJourney });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: 'Something went wrong' });
+    }
+  });
 
 router.delete('/journeys/:journeyId/', (req, res) => {
 
