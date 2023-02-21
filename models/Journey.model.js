@@ -19,7 +19,7 @@ const journeySchema = new Schema(
         required: true
      },
 
-    usersCopying: [{ type : Schema.Types.ObjectId, ref: 'User' }],
+    usersCopying: [{ type : Schema.Types.ObjectId, ref: 'User'}],
     
     tags: {
         type: [String]
