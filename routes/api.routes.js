@@ -6,6 +6,7 @@ const Journey = require("../models/Journey.model");
 const fileUploader = require("../config/cloudinary.config");
 const User = require("../models/User.model");
 
+// USER Routes
 
 router.get('/users/:userId', (req,res)=>{
     const {userId} = req.params
@@ -18,6 +19,8 @@ router.get('/users/:userId', (req,res)=>{
         .catch(err=>console.log(err))
 })
 
+
+// JOURNEY Routes
 
 router.post('/:userId/journeys', async (req, res) => {
     
@@ -36,9 +39,19 @@ router.post('/:userId/journeys', async (req, res) => {
     }
 
   let createdJourney = await  Journey.create({title, description, author: userId, image, tags, isPublic }).catch(err=>console.log(err))
-  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}).populate("journeysCreated").catch(err=>console.log(err))
+  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated").catch(err=>console.log(err))
     res.json({user: updatedUser})
 });
+
+router.get('/journeys', (req,res)=>{
+    Journey.find().populate('blocks author')
+        .then(async (journeysArray)=>{
+            let publicJourneys = await journeysArray.filter(journey=>{
+                return journey.isPublic === true
+            })
+            res.json({publicJourneys: publicJourneys})
+        })
+})
 
 router.get('/journeys/:journeyId', (req, res) => {
     
@@ -53,8 +66,8 @@ router.get('/journeys/:journeyId', (req, res) => {
 router.put('/journeys/:journeyId', async (req, res) =>  {
 
     const { journeyId } = req.params;
-    const { title, description, tags, image, isPublic } = req.body;
-   
+    const { title, description, tags, image, isPublic, userId } = req.body;
+   console.log(userId)
     let userJourney = await Journey.findById(journeyId);
     userJourney.tags.addToSet(tags);
     await userJourney.save();
@@ -63,6 +76,38 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
         .then(updatedJourney => res.status(200).json(updatedJourney))
         .catch(err => res.status(500).json({message: "Sorry, we couldn't update this journey."}))
 
+});
+
+router.put('/journeys/:journeyId/like', async (req, res) =>  {
+    let updatedJourney = {}
+    const { journeyId } = req.params;
+    const { userId } = req.body;
+   let userFound = await User.findById(userId)
+   let journeyToUpdate = await Journey.findById(journeyId)
+   if (journeyToUpdate.upvoteUsers.includes(userId)){
+    await journeyToUpdate.upvoteUsers.map(async (user)=>{
+
+        if(user = userFound._id){
+            let index = journeyToUpdate.upvoteUsers.indexOf(user)
+
+            journeyToUpdate.upvoteUsers.splice(index,1)
+            updatedJourney = await Journey.findByIdAndUpdate(journeyId, {upvoteUsers: journeyToUpdate.upvoteUsers}, {new:true})
+                .then(response=>{
+                    console.log(response)
+            })
+                .catch(err=>console.log(err))
+        }
+    })
+    res.json({journey: updatedJourney})
+    
+   } else {
+
+  
+   
+   await Journey.findByIdAndUpdate(journeyId, {$push: {upvoteUsers: userFound._id}}, {new:true})
+    .then(response=>res.json({journey: response}))
+    .catch(err=>res.json(err))
+    }
 });
 
 router.delete('/journeys/:journeyId/', (req, res) => {
@@ -136,11 +181,20 @@ router.put('/steps/:stepsId', (req,res)=>{
         })
 })
 
-router.delete('/steps/:stepsId', (req,res)=>{
-    const {stepsId} = req.params
-    Step.findByIdAndDelete(stepsId)
-        .then(stepUpdated=>{
-            res.status(200).json({message: "Step deleted"})
+router.delete('/steps/:blockId/:stepsId', async (req,res)=>{
+    const {stepsId, blockId} = req.params
+    await Step.findByIdAndDelete(stepsId)
+        .then(async (stepUpdated)=>{
+            await Block.findById(blockId)
+                .then(async (blockFound)=>{
+                    let stepToRemove = blockFound.steps.find(step=> step == stepsId)
+                    blockFound.steps.splice(blockFound.steps.findIndex(step=>step===stepToRemove),1)
+                    await Block.findByIdAndUpdate(blockId, {steps: blockFound.steps}, {new:true})
+                        .then(blockUpdated=>{
+                            res.status(200).json({message: "Step deleted"})
+                        })  
+                })
+            
         })
 })
 
@@ -211,7 +265,6 @@ router.delete('/:journeyId/blocks/:blockId/', async (req, res) => {
 
    await Block.findByIdAndDelete(blockId)
         .then(async () => {
-            let newBlocks=[]
             await Journey.findById(journeyId)
                 .then(async (journeyFound)=>{
                   let blockToRemove = journeyFound.blocks.find(block=> block == blockId)
