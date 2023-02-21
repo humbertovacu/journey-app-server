@@ -40,11 +40,34 @@ router.post('/:userId/journeys', async (req, res) => {
     res.json({user: updatedUser})
 });
 
+
+router.post('/:userId/journeys', async (req, res) => {
+    
+    const { title, description, tags, isPublic } = req.body;
+    const { userId } = req.params;
+    let image = '';
+
+    if(title === '' || description ===  ''){
+        res.json({message: 'Please add a title and a description to your new journey'});
+    };
+
+    if(!req.file){
+        image = 'https://res.cloudinary.com/djwmauhbh/image/upload/v1676047808/journey-app-assets/journey-default_aay5tv.jpg'
+    } else {
+        image = req.file.path
+    }
+
+  let createdJourney = await  Journey.create({title, description, author: userId, image, tags, isPublic }).catch(err=>console.log(err))
+  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}).populate("journeysCreated").catch(err=>console.log(err))
+    res.json({user: updatedUser})
+});
+
+
 router.get('/journeys/:journeyId', (req, res) => {
     
     const { journeyId } = req.params;
 
-    Journey.findById(journeyId).populate('blocks')
+    Journey.findById(journeyId).populate({path: 'blocks', populate: {path: 'steps'}})
         .then(foundJourney => res.status(200).json(foundJourney))
         .catch(err => res.status(404).json({message: `Sorry, we couldn't find this page.`}));
 
