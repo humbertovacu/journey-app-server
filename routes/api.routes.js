@@ -138,11 +138,11 @@ router.post('/:blockId/steps', async (req,res)=>{
     console.log(blockId)
     const { title, description,importance, links, difficulty, notes, image } = req.body
 
-    if(title === "" || description === "" || links === "" || difficulty === "" || notes === "" || image ===""){
+    if(title === "" || description === "" || links === "" || difficulty === "") {
         res.json({message: "Please make sure to fill all the fields"})
     }
     else  {
-    let stepCreated = await  Step.create({title, description, links, difficulty,importance, notes ,image})
+    let stepCreated = await  Step.create({title, description, links, difficulty, importance, notes , image})
     console.log(stepCreated)
 
            await Block.findByIdAndUpdate(blockId, {$push: {steps: stepCreated._id}}, {new:true}).populate('steps')
