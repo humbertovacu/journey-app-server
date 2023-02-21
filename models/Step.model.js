@@ -40,7 +40,8 @@ const stepSchema = new Schema(
 
     image: {
       type: String,
-      required: false
+      required: false,
+      default: 'https://res.cloudinary.com/djwmauhbh/image/upload/v1677010979/journey-app-assets/pexels-caio-46274_sxtpog.jpg'
     }
   }, 
   {
