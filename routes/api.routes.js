@@ -57,7 +57,7 @@ router.get('/journeys/:journeyId', (req, res) => {
     
     const { journeyId } = req.params;
 
-    Journey.findById(journeyId).populate('blocks')
+    Journey.findById(journeyId).populate({path: 'blocks', populate: {path: 'steps'}})
         .then(foundJourney => res.status(200).json(foundJourney))
         .catch(err => res.status(404).json({message: `Sorry, we couldn't find this page.`}));
 
@@ -158,11 +158,11 @@ router.post('/:blockId/steps', async (req,res)=>{
     console.log(blockId)
     const { title, description,importance, links, difficulty, notes, image } = req.body
 
-    if(title === "" || description === "" || links === "" || difficulty === "" || notes === "" || image ===""){
+    if(title === "" || description === "" || links === "" || difficulty === "") {
         res.json({message: "Please make sure to fill all the fields"})
     }
     else  {
-    let stepCreated = await  Step.create({title, description, links, difficulty,importance, notes ,image})
+    let stepCreated = await  Step.create({title, description, links, difficulty, importance, notes , image})
     console.log(stepCreated)
 
            await Block.findByIdAndUpdate(blockId, {$push: {steps: stepCreated._id}}, {new:true}).populate('steps')
@@ -301,6 +301,41 @@ router.delete('/:journeyId/blocks/:blockId/', async (req, res) => {
         })
 
 });
+
+// COPY JOURNEY TEST
+
+// router.post('/:userId/:journeyId/', async (req, res)  =>  {
+//     const { userId, journeyId } = req.params;
+//     const journeyToCopy = await Journey.findById(journeyId).populate('blocks');
+//     Journey.create({title: journeyToCopy.title, description: journeyToCopy.description, author: journeyToCopy.author, tags: journeyToCopy.tags, image: journeyToCopy.image})
+//         .then(copiedJourney => {
+//             User.findByIdAndUpdate(userId, {$push : {journeysCopied: copiedJourney._id}, new: true})
+//                 .then(updatedUser => console.log(updatedUser));
+//             Promise.all(journeyToCopy.blocks.map(block => {
+//                 Block.findById(block_id).populate('steps')
+//                     .then(foundBlock => {
+//                         Block.create({title: foundBlock.title, description: foundBlock.description, category: foundBlock.category, importance: foundBlock.importance})
+//                             .then(newBlock => {
+//                                 Journey.findByIdAndUpdate(copiedJourney._id, {$push : {blocks : newBlock._id}, new: true})
+//                                     .then(updatedJourney => console.log(updatedJourney))
+//                                 Promise.all(block.steps.map(step => {
+//                                     Step.create({title: step.title, desciption: step.desciption, links: step.links, difficulty: step.difficulty, importance: step.importance, notes: step.notes, image: step.image})
+//                                         .then(newStep => {
+//                                             Block.findByIdAndUpdate(newBlock._id, { $push : {steps: newStep._id}, new: true})
+//                                             .then(updatedBlock => console.log(updatedBlock))
+//                                         })
+//                                 }))
+//                             })
+                        
+//                     })
+//              }))
+//         })
+    
+
+//     Journey.findByIdAndUpdate(journeyToCopy._id, { $push: {usersCopying : userId._id}, new: true})
+//         .then(updatedJourney => console.log(updatedJourney))
+    
+// })
 
 
 module.exports = router;
