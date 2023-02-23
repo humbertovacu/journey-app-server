@@ -169,7 +169,7 @@ router.post('/:blockId/steps', async (req,res)=>{
                 .then(blockResponse=>{
                     console.log("block response")
                     console.log(blockResponse)
-                    res.json({block: blockResponse, message: "Step successfully created inside Block"})
+                    res.json({block: blockResponse, message: "Step successfully created inside Block", step: stepCreated })
                 })
                         
 
