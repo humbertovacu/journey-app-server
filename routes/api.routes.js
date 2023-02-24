@@ -90,11 +90,14 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 
 });
 
-router.delete('/journeys/:journeyId/', (req, res) => {
+router.delete('/journeys/:journeyId/', async (req, res) => {
 
     const { journeyId } = req.body;
+
+    const deleteFromUser = await User.updateOne({journeysCreated: journeyId}, {$pull: {'journeysCreated': journeyId}}, {new: true})
+                                    .then(updatedUser => console.log(`removed from ${updatedUser}`));
     
-    Journey.findByIdAndRemove(journeyId)
+    Journey.findByIdAndDelete(journeyId)
         .then(() => res.status(200).json({message: 'This journey has been deleted.'}))
         .catch(err => res.status(500).json({message: `We couldn't delete this journey. Please try again.`}))
 
