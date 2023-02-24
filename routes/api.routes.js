@@ -194,7 +194,7 @@ router.post('/:blockId/steps', async (req,res)=>{
                 .then(blockResponse=>{
                     console.log("block response")
                     console.log(blockResponse)
-                    res.json({block: blockResponse, message: "Step successfully created inside Block"})
+                    res.json({block: blockResponse, message: "Step successfully created inside Block", step: stepCreated })
                 })
                         
 
@@ -217,8 +217,8 @@ router.get('/steps/:stepsId', (req,res)=>{
 
 router.put('/steps/:stepsId', (req,res)=>{
     const { stepsId } = req.params
-    const { title, description, importance, links, difficulty, notes, image } = req.body;
-    Step.findByIdAndUpdate(stepsId, {title, description, importance, links, difficulty, notes, image}, {new:true})
+    const { title, description, importance, links, difficulty, notes, image, isCompleted } = req.body;
+    Step.findByIdAndUpdate(stepsId, {title, description, importance, links, difficulty, notes, image, isCompleted}, {new:true})
         .then(stepUpdated=>{
             res.status(200).json(stepUpdated)
         });
