@@ -179,15 +179,21 @@ router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
 // STEP Routes
 
 router.post('/:blockId/steps', async (req,res)=>{
-    const {blockId} = req.params
-    console.log(blockId)
-    const { title, description,importance, links, difficulty, notes, image } = req.body
+    const {blockId} = req.params;
+    const { title, description,importance, links, difficulty, notes, image } = req.body;
+    let imageToUpload = '';
+
+    if(!image) {
+        imageToUpload = 'https://res.cloudinary.com/djwmauhbh/image/upload/v1677010979/journey-app-assets/pexels-caio-46274_sxtpog.jpg'
+    } else {
+        imageToUpload = image;
+    };
 
     if(title === "" || description === "" || links === "" || difficulty === "") {
         res.json({message: "Please make sure to fill all the fields"})
     }
     else  {
-    let stepCreated = await  Step.create({title, description, links, difficulty, importance, notes , image})
+    let stepCreated = await  Step.create({title, description, links, difficulty, importance, notes, image: imageToUpload})
     console.log(stepCreated)
 
            await Block.findByIdAndUpdate(blockId, {$push: {steps: stepCreated._id}}, {new:true}).populate('steps')
