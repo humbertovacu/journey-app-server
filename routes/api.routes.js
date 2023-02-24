@@ -281,6 +281,15 @@ router.get('/blocks', (req, res) => {
     });
 });
 
+router.get('/:blockId', (req, res) => {
+
+    const { blockId } = req.params;
+    
+    Journey.findOne({blocks: blockId})
+        .then(response => res.status(200).json(response))
+        
+});
+
 
 router.get('/blocks/:blockId', (req, res) => {
 
