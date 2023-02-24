@@ -11,11 +11,23 @@ const User = require("../models/User.model");
 router.get('/users/:userId', (req,res)=>{
     const {userId} = req.params
     console.log(userId)
-    User.findById(userId).populate('journeysCreated')
+    User.findById(userId).populate({
+        path: 'journeysCreated',
+        populate: {
+          path: 'author',
+          model: 'User'
+        }
+    }).populate({
+        path: 'journeysCopied',
+    populate: {
+      path: 'author',
+      model: 'User'
+    }})
         .then(response=>{
+            console.log(response.journeysCopied)
             let {_id, username, email, journeysCreated, journeysCopied, journeysCompleted, profilePicture} = response
             res.json({_id, username, email, journeysCreated, journeysCompleted, journeysCopied, profilePicture})
-    })
+    })  
         .catch(err=>console.log(err))
 })
 
@@ -39,7 +51,7 @@ router.post('/:userId/journeys', async (req, res) => {
     }
 
   let createdJourney = await  Journey.create({title, description, author: userId, image, tags, isPublic }).catch(err=>console.log(err))
-  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated").catch(err=>console.log(err))
+  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated journeysCopied").catch(err=>console.log(err))
     res.json({user: updatedUser})
 });
 
@@ -78,6 +90,15 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 
 });
 
+router.delete('/journeys/:journeyId/', (req, res) => {
+
+    const { journeyId } = req.body;
+    
+    Journey.findByIdAndRemove(journeyId)
+        .then(() => res.status(200).json({message: 'This journey has been deleted.'}))
+        .catch(err => res.status(500).json({message: `We couldn't delete this journey. Please try again.`}))
+
+})
 // JOURNEY LIKES ROUTES
 
 router.post('/journeys/:journeyId/like', async (req, res) => {
@@ -87,17 +108,24 @@ router.post('/journeys/:journeyId/like', async (req, res) => {
     try {
       const userFound = await User.findById(userId)
       const journeyToUpdate = await Journey.findById(journeyId)
-  
+        
       if (journeyToUpdate.upvoteUsers.includes(userId)) {
+        console.log("original user array")
+        console.log(userFound)
         journeyToUpdate.upvoteUsers = journeyToUpdate.upvoteUsers.filter(user => user.toString() !== userId)
-  
+        userFound.journeysCopied = userFound.journeysCopied.filter(journey => journey.toString() !== journeyId)
+        console.log("user array updated")
+        console.log(userFound)
         const updatedJourney = await journeyToUpdate.save()
+        const updatedUser = await userFound.save()
+
   
         res.json({ journey: updatedJourney })
       } else {
         journeyToUpdate.upvoteUsers.push(userId)
-  
+        userFound.journeysCopied.push(journeyId)
         const updatedJourney = await journeyToUpdate.save()
+        const updatedUser = await userFound.save()
   
         res.json({ journey: updatedJourney })
       }
@@ -111,17 +139,22 @@ router.post('/journeys/:journeyId/like', async (req, res) => {
   
     try {
       const journey = await Journey.findById(journeyId);
+      const userFound = await User.findById(userId)
       if (!journey) {
         return res.status(404).json({ message: 'Journey not found' });
       }
   
       const userIndex = journey.upvoteUsers.indexOf(userId);
+      const journeyIndex = userFound.journeysCopied.indexOf(journeyId)
       if (userIndex === -1) {
         return res.status(404).json({ message: 'User has not liked this journey' });
       }
   
       journey.upvoteUsers.splice(userIndex, 1);
+      userFound.journeysCopied.splice(journeyIndex, 1)
       const updatedJourney = await journey.save();
+      const updatedUser = await userFound.save();
+
   
       res.json({ journey: updatedJourney });
     } catch (error) {
@@ -130,15 +163,7 @@ router.post('/journeys/:journeyId/like', async (req, res) => {
     }
   });
 
-router.delete('/journeys/:journeyId/', (req, res) => {
 
-    const { journeyId } = req.body;
-    
-    Journey.findByIdAndRemove(journeyId)
-        .then(() => res.status(200).json({message: 'This journey has been deleted.'}))
-        .catch(err => res.status(500).json({message: `We couldn't delete this journey. Please try again.`}))
-
-})
 
 // CLOUDINARY ROUTE
 
