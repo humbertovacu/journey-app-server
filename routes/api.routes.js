@@ -309,10 +309,10 @@ router.get('/blocks/:blockId', (req, res) => {
 
 router.put('/blocks/:blockId/', (req, res) => {
     
-    const { title, description, category, importance } = req.body;
+    const { title, description, category, importance, isCompleted } = req.body;
     const { blockId } = req.params;
     
-    Block.findByIdAndUpdate(blockId, {title, description, category, importance}, {new: true})
+    Block.findByIdAndUpdate(blockId, {title, description, category, importance, isCompleted}, {new: true})
         .then(updatedBlock => res.status(200).json({block: updatedBlock}))
         .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}));
         
