@@ -14,6 +14,11 @@ const journeySchema = new Schema(
 
     blocks: [{ type : Schema.Types.ObjectId, ref: 'Block' }],
 
+    category : {
+      type: String,
+      enum : ['Finance', 'Programming', 'Blockchain', 'Culture', 'Languages']
+    },
+
     author: { 
         type: Schema.Types.ObjectId, ref: 'User',
         required: true
