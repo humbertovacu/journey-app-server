@@ -322,7 +322,7 @@ router.put('/blocks/:blockId/', (req, res) => {
 router.delete('/:journeyId/blocks/:blockId/', async (req, res) => {
     
     const { blockId } = req.params;
-    const {journeyId} = req.params
+    const { journeyId } = req.params;
 
    await Block.findByIdAndDelete(blockId)
         .then(async () => {
