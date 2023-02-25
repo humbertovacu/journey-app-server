@@ -36,21 +36,21 @@ router.get('/users/:userId', (req,res)=>{
 
 router.post('/:userId/journeys', async (req, res) => {
     
-    const { title, description, tags, isPublic } = req.body;
+    const { title, description, tags, isPublic, image, category } = req.body;
     const { userId } = req.params;
-    let image = '';
+    let imageToUpload = ''
 
     if(title === '' || description ===  ''){
         res.json({message: 'Please add a title and a description to your new journey'});
     };
 
-    if(!req.file){
-        image = 'https://res.cloudinary.com/djwmauhbh/image/upload/v1676047808/journey-app-assets/journey-default_aay5tv.jpg'
+    if(!image){
+        imageToUpload = 'https://res.cloudinary.com/djwmauhbh/image/upload/v1676047808/journey-app-assets/journey-default_aay5tv.jpg'
     } else {
-        image = req.file.path
+        imageToUpload = image
     }
 
-  let createdJourney = await  Journey.create({title, description, author: userId, image, tags, isPublic }).catch(err=>console.log(err))
+  let createdJourney = await  Journey.create({title, description, author: userId, image: imageToUpload, tags, isPublic, category }).catch(err=>console.log(err))
   let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated journeysCopied").catch(err=>console.log(err))
     res.json({user: updatedUser, journey: createdJourney})
 });
@@ -79,13 +79,16 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 
     const { journeyId } = req.params;   
     const { title, description, tags, image, isPublic, userId } = req.body;
-   console.log(userId)
+   console.log(image)
     let userJourney = await Journey.findById(journeyId);
     userJourney.tags.addToSet(tags);
     await userJourney.save();
     
     Journey.findByIdAndUpdate(journeyId, {title, description, image, isPublic}, {new: true})
-        .then(updatedJourney => res.status(200).json(updatedJourney))
+        .then(updatedJourney => {
+            console.log(updatedJourney)
+            res.status(200).json(updatedJourney)
+        })
         .catch(err => res.status(500).json({message: "Sorry, we couldn't update this journey."}))
 
 });
@@ -174,7 +177,6 @@ router.post('/upload', fileUploader.single("imageUrl"), (req, res) => {
     if(!req.file){
         res.status(400).json({message : 'No file uploaded'})
     }
-
     res.json({imageUrl: req.file.path});
 
 });
