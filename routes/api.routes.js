@@ -69,7 +69,7 @@ router.get('/journeys/:journeyId', (req, res) => {
     
     const { journeyId } = req.params;
 
-    Journey.findById(journeyId).populate({path: 'blocks', populate: {path: 'steps'}})
+    Journey.findById(journeyId).populate({path: 'blocks', populate: {path: 'steps'}}).populate('author')
         .then(foundJourney => res.status(200).json(foundJourney))
         .catch(err => res.status(404).json({message: `Sorry, we couldn't find this page.`}));
 
@@ -77,7 +77,7 @@ router.get('/journeys/:journeyId', (req, res) => {
 
 router.put('/journeys/:journeyId', async (req, res) =>  {
 
-    const { journeyId } = req.params;
+    const { journeyId } = req.params;   
     const { title, description, tags, image, isPublic, userId } = req.body;
    console.log(userId)
     let userJourney = await Journey.findById(journeyId);
@@ -92,7 +92,8 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 
 router.delete('/journeys/:journeyId/', async (req, res) => {
 
-    const { journeyId } = req.body;
+    const { journeyId } = req.params;
+    console.log(journeyId)
 
     const deleteFromUser = await User.updateOne({journeysCreated: journeyId}, {$pull: {'journeysCreated': journeyId}}, {new: true})
                                     .then(updatedUser => console.log(`removed from ${updatedUser}`));
@@ -197,6 +198,7 @@ router.post('/:blockId/steps', async (req,res)=>{
     }
     else  {
     let stepCreated = await  Step.create({title, description, links, difficulty, importance, notes, image: imageToUpload})
+    console.log("here")
     console.log(stepCreated)
 
            await Block.findByIdAndUpdate(blockId, {$push: {steps: stepCreated._id}}, {new:true}).populate('steps')
@@ -343,7 +345,6 @@ router.delete('/:journeyId/blocks/:blockId/', async (req, res) => {
 
 });
 
-// COPY JOURNEY TEST
 
 // router.post('/:userId/:journeyId/', async (req, res)  =>  {
 //     const { userId, journeyId } = req.params;
