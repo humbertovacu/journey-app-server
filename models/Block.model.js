@@ -24,6 +24,12 @@ const blockSchema = new Schema(
         required: true,
         enum:["Recommended", "Critical", "Optional"]
     },
+    
+    isCompleted: {
+      type: Boolean,
+      default: false
+    },
+
   }, 
   {
     timestamps: true,
