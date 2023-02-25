@@ -52,7 +52,7 @@ router.post('/:userId/journeys', async (req, res) => {
 
   let createdJourney = await  Journey.create({title, description, author: userId, image, tags, isPublic }).catch(err=>console.log(err))
   let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated journeysCopied").catch(err=>console.log(err))
-    res.json({user: updatedUser})
+    res.json({user: updatedUser, journey: createdJourney})
 });
 
 router.get('/journeys', (req,res)=>{
@@ -93,7 +93,6 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 router.delete('/journeys/:journeyId/', async (req, res) => {
 
     const { journeyId } = req.params;
-    console.log(journeyId)
 
     const deleteFromUser = await User.updateOne({journeysCreated: journeyId}, {$pull: {'journeysCreated': journeyId}}, {new: true})
                                     .then(updatedUser => console.log(`removed from ${updatedUser}`));
@@ -311,10 +310,10 @@ router.get('/blocks/:blockId', (req, res) => {
 
 router.put('/blocks/:blockId/', (req, res) => {
     
-    const { title, description, category, importance } = req.body;
+    const { title, description, category, importance, isCompleted } = req.body;
     const { blockId } = req.params;
     
-    Block.findByIdAndUpdate(blockId, {title, description, category, importance}, {new: true})
+    Block.findByIdAndUpdate(blockId, {title, description, category, importance, isCompleted}, {new: true})
         .then(updatedBlock => res.status(200).json({block: updatedBlock}))
         .catch(err => res.status(500).json({message: "Internal Server Error. Please try again."}));
         
@@ -324,7 +323,7 @@ router.put('/blocks/:blockId/', (req, res) => {
 router.delete('/:journeyId/blocks/:blockId/', async (req, res) => {
     
     const { blockId } = req.params;
-    const {journeyId} = req.params
+    const { journeyId } = req.params;
 
    await Block.findByIdAndDelete(blockId)
         .then(async () => {
