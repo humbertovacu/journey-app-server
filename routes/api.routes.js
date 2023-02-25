@@ -52,7 +52,7 @@ router.post('/:userId/journeys', async (req, res) => {
 
   let createdJourney = await  Journey.create({title, description, author: userId, image, tags, isPublic }).catch(err=>console.log(err))
   let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated journeysCopied").catch(err=>console.log(err))
-    res.json({user: updatedUser})
+    res.json({user: updatedUser, journey: createdJourney})
 });
 
 router.get('/journeys', (req,res)=>{
