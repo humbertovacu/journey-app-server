@@ -92,7 +92,7 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 
 router.delete('/journeys/:journeyId/', async (req, res) => {
 
-    const { journeyId } = req.body;
+    const { journeyId } = req.params;
 
     const deleteFromUser = await User.updateOne({journeysCreated: journeyId}, {$pull: {'journeysCreated': journeyId}}, {new: true})
                                     .then(updatedUser => console.log(`removed from ${updatedUser}`));
