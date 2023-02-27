@@ -79,12 +79,8 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 
     const { journeyId } = req.params;   
     const { title, description, tags, image, isPublic, userId } = req.body;
-   console.log(image)
-    let userJourney = await Journey.findById(journeyId);
-    userJourney.tags.addToSet(tags);
-    await userJourney.save();
     
-    Journey.findByIdAndUpdate(journeyId, {title, description, image, isPublic}, {new: true})
+    Journey.findByIdAndUpdate(journeyId, {title, description, image, isPublic, tags}, {new: true})
         .then(updatedJourney => {
             console.log(updatedJourney)
             res.status(200).json(updatedJourney)
