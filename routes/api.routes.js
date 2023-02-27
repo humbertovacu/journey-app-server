@@ -79,8 +79,17 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
 
     const { journeyId } = req.params;   
     const { title, description, tags, image, isPublic, userId } = req.body;
+
+    if(tags) {
+        Journey.findByIdAndUpdate(journeyId, {$addToSet: {tags: {$each: [tags]}}}, {new: true})
+        .then(updatedJourney => {
+            console.log(updatedJourney)
+            res.status(200).json(updatedJourney)
+        })
+        .catch(err => res.status(500).json({message: "Sorry, we couldn't update this journey."}))
+    }
     
-    Journey.findByIdAndUpdate(journeyId, {title, description, image, isPublic, tags}, {new: true})
+    Journey.findByIdAndUpdate(journeyId, {title, description, image, isPublic}, {new: true})
         .then(updatedJourney => {
             console.log(updatedJourney)
             res.status(200).json(updatedJourney)
