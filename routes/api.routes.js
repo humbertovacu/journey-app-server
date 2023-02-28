@@ -31,6 +31,14 @@ router.get('/users/:userId', (req,res)=>{
         .catch(err=>console.log(err))
 })
 
+router.get('/users', (req,res)=>{
+    User.find()
+        .then(response=>{
+            console.log(response)
+            res.json({users: response})
+        })
+
+})
 
 // JOURNEY Routes
 
