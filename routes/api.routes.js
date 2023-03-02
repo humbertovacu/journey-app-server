@@ -209,8 +209,6 @@ router.post('/:blockId/steps', async (req,res)=>{
     }
     else  {
     let stepCreated = await  Step.create({title, description, links, difficulty, importance, notes, image: imageToUpload})
-    console.log("here")
-    console.log(stepCreated)
 
            await Block.findByIdAndUpdate(blockId, {$push: {steps: stepCreated._id}}, {new:true}).populate('steps')
                 .then(blockResponse=>{
