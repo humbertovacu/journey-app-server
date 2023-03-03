@@ -10,7 +10,7 @@ const User = require("../models/User.model");
 
 router.get('/users/:userId', (req,res)=>{
     const {userId} = req.params
-    console.log(userId)
+
     User.findById(userId).populate({
         path: 'journeysCreated',
         populate: {
@@ -24,7 +24,6 @@ router.get('/users/:userId', (req,res)=>{
       model: 'User'
     }})
         .then(response=>{
-            console.log(response.journeysCopied)
             let {_id, username, email, journeysCreated, journeysCopied, journeysCompleted, profilePicture} = response
             res.json({_id, username, email, journeysCreated, journeysCompleted, journeysCopied, profilePicture})
     })  
@@ -34,7 +33,6 @@ router.get('/users/:userId', (req,res)=>{
 router.put('/users/:userId', (req, res) => {
     const { profilePicture } = req.body;
     const { userId } = req.params;
-    console.log(req.body)
     User.findByIdAndUpdate(userId, {profilePicture: profilePicture}, {new: true})
         .then(response => res.status(200).json(response))
         .catch(err => res.status(500).json({message: 'Internal Server Error'}))
@@ -50,7 +48,6 @@ router.get('/users', (req,res)=>{
         }
     })
         .then(response=>{
-            console.log(response)
             res.json({users: response})
         })
 
