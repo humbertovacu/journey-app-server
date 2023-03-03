@@ -34,7 +34,7 @@ router.get('/users/:userId', (req,res)=>{
 router.put('/users/:userId', (req, res) => {
     const { profilePicture } = req.body;
     const { userId } = req.params;
-
+    console.log(req.body)
     User.findByIdAndUpdate(userId, {profilePicture: profilePicture}, {new: true})
         .then(response => res.status(200).json(response))
         .catch(err => res.status(500).json({message: 'Internal Server Error'}))
@@ -74,8 +74,8 @@ router.post('/:userId/journeys', async (req, res) => {
         imageToUpload = image
     }
 
-  let createdJourney = await  Journey.create({title, description, author: userId, image: imageToUpload, tags, isPublic, category }).catch(err=>res.json({message: 'Internal Server Error'}))
-  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated journeysCopied").catch(res.json({message: 'Internal Server Error'}))
+  let createdJourney = await  Journey.create({title, description, author: userId, image: imageToUpload, tags, isPublic, category }).catch(err=> console.log(err))
+  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated journeysCopied").catch(err => console.log(err))
     res.json({user: updatedUser, journey: createdJourney})
 });
 
