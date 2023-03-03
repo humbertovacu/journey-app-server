@@ -10,7 +10,6 @@ const User = require("../models/User.model");
 
 router.get('/users/:userId', (req,res)=>{
     const {userId} = req.params
-    console.log(userId)
     User.findById(userId).populate({
         path: 'journeysCreated',
         populate: {
@@ -24,7 +23,6 @@ router.get('/users/:userId', (req,res)=>{
       model: 'User'
     }})
         .then(response=>{
-            console.log(response.journeysCopied)
             let {_id, username, email, journeysCreated, journeysCopied, journeysCompleted, profilePicture} = response
             res.json({_id, username, email, journeysCreated, journeysCompleted, journeysCopied, profilePicture})
     })  
@@ -40,7 +38,6 @@ router.get('/users', (req,res)=>{
         }
     })
         .then(response=>{
-            console.log(response)
             res.json({users: response})
         })
 
@@ -96,7 +93,6 @@ router.put('/journeys/:journeyId', async (req, res) =>  {
     
     Journey.findByIdAndUpdate(journeyId, {title, description, image, isPublic, tags}, {new: true})
         .then(updatedJourney => {
-            console.log(updatedJourney)
             res.status(200).json(updatedJourney)
         })
         .catch(err => res.status(500).json({message: "Sorry, we couldn't update this journey."}))
@@ -108,7 +104,7 @@ router.delete('/journeys/:journeyId/', async (req, res) => {
     const { journeyId } = req.params;
 
     const deleteFromUser = await User.updateOne({journeysCreated: journeyId}, {$pull: {'journeysCreated': journeyId}}, {new: true})
-                                    .then(updatedUser => console.log(`removed from ${updatedUser}`));
+                                   
     
     Journey.findByIdAndDelete(journeyId)
         .then(() => res.status(200).json({message: 'This journey has been deleted.'}))
@@ -120,18 +116,15 @@ router.delete('/journeys/:journeyId/', async (req, res) => {
 router.post('/journeys/:journeyId/like', async (req, res) => {
     const { journeyId } = req.params;
     const { userId } = req.body;
-  console.log("starting")
     try {
       const userFound = await User.findById(userId)
       const journeyToUpdate = await Journey.findById(journeyId)
         
       if (journeyToUpdate.upvoteUsers.includes(userId)) {
-        console.log("original user array")
-        console.log(userFound)
+        
         journeyToUpdate.upvoteUsers = journeyToUpdate.upvoteUsers.filter(user => user.toString() !== userId)
         userFound.journeysCopied = userFound.journeysCopied.filter(journey => journey.toString() !== journeyId)
-        console.log("user array updated")
-        console.log(userFound)
+        
         const updatedJourney = await journeyToUpdate.save()
         const updatedUser = await userFound.save()
 
@@ -212,8 +205,7 @@ router.post('/:blockId/steps', async (req,res)=>{
 
            await Block.findByIdAndUpdate(blockId, {$push: {steps: stepCreated._id}}, {new:true}).populate('steps')
                 .then(blockResponse=>{
-                    console.log("block response")
-                    console.log(blockResponse)
+                    
                     res.json({block: blockResponse, message: "Step successfully created inside Block", step: stepCreated })
                 })
                         
@@ -227,10 +219,8 @@ router.post('/:blockId/steps', async (req,res)=>{
 
 router.get('/steps/:stepsId', (req,res)=>{
     const {stepsId} = req.params
-    console.log(stepsId)
     Step.findById(stepsId)
         .then(stepsData=>{
-            console.log(stepsData)
             res.json(stepsData)
         })
 })
@@ -353,40 +343,6 @@ router.delete('/:journeyId/blocks/:blockId/', async (req, res) => {
         })
 
 });
-
-
-// router.post('/:userId/:journeyId/', async (req, res)  =>  {
-//     const { userId, journeyId } = req.params;
-//     const journeyToCopy = await Journey.findById(journeyId).populate('blocks');
-//     Journey.create({title: journeyToCopy.title, description: journeyToCopy.description, author: journeyToCopy.author, tags: journeyToCopy.tags, image: journeyToCopy.image})
-//         .then(copiedJourney => {
-//             User.findByIdAndUpdate(userId, {$push : {journeysCopied: copiedJourney._id}, new: true})
-//                 .then(updatedUser => console.log(updatedUser));
-//             Promise.all(journeyToCopy.blocks.map(block => {
-//                 Block.findById(block_id).populate('steps')
-//                     .then(foundBlock => {
-//                         Block.create({title: foundBlock.title, description: foundBlock.description, category: foundBlock.category, importance: foundBlock.importance})
-//                             .then(newBlock => {
-//                                 Journey.findByIdAndUpdate(copiedJourney._id, {$push : {blocks : newBlock._id}, new: true})
-//                                     .then(updatedJourney => console.log(updatedJourney))
-//                                 Promise.all(block.steps.map(step => {
-//                                     Step.create({title: step.title, desciption: step.desciption, links: step.links, difficulty: step.difficulty, importance: step.importance, notes: step.notes, image: step.image})
-//                                         .then(newStep => {
-//                                             Block.findByIdAndUpdate(newBlock._id, { $push : {steps: newStep._id}, new: true})
-//                                             .then(updatedBlock => console.log(updatedBlock))
-//                                         })
-//                                 }))
-//                             })
-                        
-//                     })
-//              }))
-//         })
-    
-
-//     Journey.findByIdAndUpdate(journeyToCopy._id, { $push: {usersCopying : userId._id}, new: true})
-//         .then(updatedJourney => console.log(updatedJourney))
-    
-// })
 
 
 module.exports = router;
