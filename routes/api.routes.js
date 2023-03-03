@@ -34,7 +34,7 @@ router.get('/users/:userId', (req,res)=>{
 router.put('/users/:userId', (req, res) => {
     const { userId, profilePicture } = req.body;
 
-    User.findByIdAndUpdate(userId, profilePicture)
+    User.findByIdAndUpdate(userId, profilePicture, {new: true})
         .then(response => res.status(200).json(response))
         .catch(err => res.status(500).json({message: 'Internal Server Error'}))
 
