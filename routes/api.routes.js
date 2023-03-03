@@ -10,7 +10,6 @@ const User = require("../models/User.model");
 
 router.get('/users/:userId', (req,res)=>{
     const {userId} = req.params
-
     User.findById(userId).populate({
         path: 'journeysCreated',
         populate: {
@@ -114,7 +113,7 @@ router.delete('/journeys/:journeyId/', async (req, res) => {
     const { journeyId } = req.params;
 
     const deleteFromUser = await User.updateOne({journeysCreated: journeyId}, {$pull: {'journeysCreated': journeyId}}, {new: true})
-                                    .then(updatedUser => console.log(`removed from ${updatedUser}`));
+                                   
     
     Journey.findByIdAndDelete(journeyId)
         .then(() => res.status(200).json({message: 'This journey has been deleted.'}))
