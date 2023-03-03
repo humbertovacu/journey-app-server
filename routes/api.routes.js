@@ -29,6 +29,15 @@ router.get('/users/:userId', (req,res)=>{
         .catch(err=>console.log(err))
 })
 
+router.put('/users/:userId', (req, res) => {
+    const { profilePicture } = req.body;
+    const { userId } = req.params;
+    User.findByIdAndUpdate(userId, {profilePicture: profilePicture}, {new: true})
+        .then(response => res.status(200).json(response))
+        .catch(err => res.status(500).json({message: 'Internal Server Error'}))
+
+})
+
 router.get('/users', (req,res)=>{
     User.find().populate("journeysCreated").populate({
         path: 'journeysCreated',
@@ -61,8 +70,8 @@ router.post('/:userId/journeys', async (req, res) => {
         imageToUpload = image
     }
 
-  let createdJourney = await  Journey.create({title, description, author: userId, image: imageToUpload, tags, isPublic, category }).catch(err=>console.log(err))
-  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated journeysCopied").catch(err=>console.log(err))
+  let createdJourney = await  Journey.create({title, description, author: userId, image: imageToUpload, tags, isPublic, category }).catch(err=> console.log(err))
+  let updatedUser = await  User.findByIdAndUpdate(userId, {$push :{journeysCreated: createdJourney._id}}, {new:true}).populate("journeysCreated journeysCopied").catch(err => console.log(err))
     res.json({user: updatedUser, journey: createdJourney})
 });
 
@@ -121,10 +130,8 @@ router.post('/journeys/:journeyId/like', async (req, res) => {
       const journeyToUpdate = await Journey.findById(journeyId)
         
       if (journeyToUpdate.upvoteUsers.includes(userId)) {
-        
         journeyToUpdate.upvoteUsers = journeyToUpdate.upvoteUsers.filter(user => user.toString() !== userId)
         userFound.journeysCopied = userFound.journeysCopied.filter(journey => journey.toString() !== journeyId)
-        
         const updatedJourney = await journeyToUpdate.save()
         const updatedUser = await userFound.save()
 
@@ -167,7 +174,6 @@ router.post('/journeys/:journeyId/like', async (req, res) => {
   
       res.json({ journey: updatedJourney });
     } catch (error) {
-      console.log(error);
       res.status(500).json({ message: 'Something went wrong' });
     }
   });
@@ -205,16 +211,10 @@ router.post('/:blockId/steps', async (req,res)=>{
 
            await Block.findByIdAndUpdate(blockId, {$push: {steps: stepCreated._id}}, {new:true}).populate('steps')
                 .then(blockResponse=>{
-                    
                     res.json({block: blockResponse, message: "Step successfully created inside Block", step: stepCreated })
                 })
-                        
-
-            //Missing: Push the newly created Step into the Block model (steps property) , we can 
-            // find the ID of the model through the URL (useParams hook necessary)
-       
-    }
-  })
+        }
+    })
 
 
 router.get('/steps/:stepsId', (req,res)=>{
