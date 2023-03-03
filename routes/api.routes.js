@@ -41,7 +41,13 @@ router.put('/users/:userId', (req, res) => {
 })
 
 router.get('/users', (req,res)=>{
-    User.find()
+    User.find().populate("journeysCreated").populate({
+        path: 'journeysCreated',
+        populate: {
+          path: 'blocks',
+          model: 'Block'
+        }
+    })
         .then(response=>{
             console.log(response)
             res.json({users: response})
