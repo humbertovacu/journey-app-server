@@ -1,6 +1,6 @@
 # SkillRoad App: Share your Knowledge
 
-<p>This project is available <a href="https://wwww.skillroad.netlify.app"> Here </a>. It is cooperatively maintained by GitHub users <a href="https://github.com/humbertovacu">Humberto</a> and <a href="https://github.com/Paulfresnel"> Paul </a>. </p>
+<p>This project is available <a href="https://www.skillroad.netlify.app"> Here </a>. It is cooperatively maintained by GitHub users <a href="https://github.com/humbertovacu">Humberto</a> and <a href="https://github.com/Paulfresnel"> Paul </a>. </p>
 
 <p>This github repository is the source of our server, to find our front-end project github reposotory, click <a href="https://github.com/Paulfresnel/journey-app-client"> here </a>  </p>
 
